@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japanese Kana Quiz</title>
+    <style>
+        :root {
+            --primary: #E34234;
+            --secondary: #2E86C1;
+            --background: #F5F5F5;
+            --text: #333;
+            --correct: #27AE60;
+            --wrong: #E74C3C;
+        }
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--primary);
+        }
+        
+        .menu-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        
+        .menu-btn:hover {
+            background-color: var(--primary);
+        }
+        
+        .kana-section {
+            margin-bottom: 40px;
+        }
+        
+        .kana-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .kana-card {
+            background-color: white;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .kana-char {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .kana-romaji {
+            font-size: 0.9rem;
+            color: var(--secondary);
+        }
+        
+        /* Quiz Styles */
+        .quiz-container {
+            display: none;
+        }
+        
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .question {
+            font-size: 5rem;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .option-btn {
+            padding: 15px;
+            background-color: white;
+            border: 2px solid var(--secondary);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        .option-btn:hover {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .option-btn.correct {
+            background-color: var(--correct);
+            color: white;
+            border-color: var(--correct);
+        }
+        
+        .option-btn.wrong {
+            background-color: var(--wrong);
+            color: white;
+            border-color: var(--wrong);
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--secondary);
+            border-radius: 5px;
+            transition: width 0.3s;
+        }
+        
+        .result-container {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .result-score {
+            font-size: 2rem;
+            color: var(--primary);
+            margin: 20px 0;
+        }
+        
+        .restart-btn {
+            padding: 10px 20px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Japanese Kana Quiz</h1>
+            <p>Learn and practice Hiragana and Katakana characters</p>
+        </header>
+        
+        <div id="homepage">
+            <div class="button-container">
+                <button class="menu-btn" id="quiz-hiragana">Hiragana Quiz</button>
+                <button class="menu-btn" id="quiz-katakana">Katakana Quiz</button>
+                <button class="menu-btn" id="quiz-both">Both Quiz</button>
+            </div>
+            
+            <div class="kana-section">
+                <h2>Hiragana Characters</h2>
+                <div class="kana-grid" id="hiragana-chars"></div>
+            </div>
+            
+            <div class="kana-section">
+                <h2>Katakana Characters</h2>
+                <div class="kana-grid" id="katakana-chars"></div>
+            </div>
+        </div>
+        
+        <div class="quiz-container" id="quiz-container">
+            <div class="quiz-header">
+                <div class="score">Score: <span id="score">0</span></div>
+                <div class="question-count">Question <span id="current-question">1</span>/<span id="total-questions">10</span></div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div class="question" id="question"></div>
+            
+            <div class="options" id="options"></div>
+        </div>
+        
+        <div class="result-container" id="result-container">
+            <h2>Quiz Completed!</h2>
+            <div class="result-score">Your Score: <span id="final-score">0</span>/<span id="max-score">10</span></div>
+            <button class="restart-btn" id="restart-btn">Restart Quiz</button>
+            <button class="restart-btn" id="home-btn">Back to Home</button>
+        </div>
+    </div>
+
+    <script>
+        // Kana Data
+        const hiragana = [
+            { char: 'あ', romaji: 'a' }, { char: 'い', romaji: 'i' }, { char: 'う', romaji: 'u' }, { char: 'え', romaji: 'e' }, { char: 'お', romaji: 'o' },
+            { char: 'か', romaji: 'ka' }, { char: 'き', romaji: 'ki' }, { char: 'く', romaji: 'ku' }, { char: 'け', romaji: 'ke' }, { char: 'こ', romaji: 'ko' },
+            { char: 'さ', romaji: 'sa' }, { char: 'し', romaji: 'shi' }, { char: 'す', romaji: 'su' }, { char: 'せ', romaji: 'se' }, { char: 'そ', romaji: 'so' },
+            { char: 'た', romaji: 'ta' }, { char: 'ち', romaji: 'chi' }, { char: 'つ', romaji: 'tsu' }, { char: 'て', romaji: 'te' }, { char: 'と', romaji: 'to' },
+            { char: 'な', romaji: 'na' }, { char: 'に', romaji: 'ni' }, { char: 'ぬ', romaji: 'nu' }, { char: 'ね', romaji: 'ne' }, { char: 'の', romaji: 'no' },
+            { char: 'は', romaji: 'ha' }, { char: 'ひ', romaji: 'hi' }, { char: 'ふ', romaji: 'fu' }, { char: 'へ', romaji: 'he' }, { char: 'ほ', romaji: 'ho' },
+            { char: 'ま', romaji: 'ma' }, { char: 'み', romaji: 'mi' }, { char: 'む', romaji: 'mu' }, { char: 'め', romaji: 'me' }, { char: 'も', romaji: 'mo' },
+            { char: 'や', romaji: 'ya' }, { char: 'ゆ', romaji: 'yu' }, { char: 'よ', romaji: 'yo' },
+            { char: 'ら', romaji: 'ra' }, { char: 'り', romaji: 'ri' }, { char: 'る', romaji: 'ru' }, { char: 'れ', romaji: 're' }, { char: 'ろ', romaji: 'ro' },
+            { char: 'わ', romaji: 'wa' }, { char: 'を', romaji: 'wo' }, { char: 'ん', romaji: 'n' }
+        ];
+        
+        const katakana = [
+            { char: 'ア', romaji: 'a' }, { char: 'イ', romaji: 'i' }, { char: 'ウ', romaji: 'u' }, { char: 'エ', romaji: 'e' }, { char: 'オ', romaji: 'o' },
+            { char: 'カ', romaji: 'ka' }, { char: 'キ', romaji: 'ki' }, { char: 'ク', romaji: 'ku' }, { char: 'ケ', romaji: 'ke' }, { char: 'コ', romaji: 'ko' },
+            { char: 'サ', romaji: 'sa' }, { char: 'シ', romaji: 'shi' }, { char: 'ス', romaji: 'su' }, { char: 'セ', romaji: 'se' }, { char: 'ソ', romaji: 'so' },
+            { char: 'タ', romaji: 'ta' }, { char: 'チ', romaji: 'chi' }, { char: 'ツ', romaji: 'tsu' }, { char: 'テ', romaji: 'te' }, { char: 'ト', romaji: 'to' },
+            { char: 'ナ', romaji: 'na' }, { char: 'ニ', romaji: 'ni' }, { char: 'ヌ', romaji: 'nu' }, { char: 'ネ', romaji: 'ne' }, { char: 'ノ', romaji: 'no' },
+            { char: 'ハ', romaji: 'ha' }, { char: 'ヒ', romaji: 'hi' }, { char: 'フ', romaji: 'fu' }, { char: 'ヘ', romaji: 'he' }, { char: 'ホ', romaji: 'ho' },
+            { char: 'マ', romaji: 'ma' }, { char: 'ミ', romaji: 'mi' }, { char: 'ム', romaji: 'mu' }, { char: 'メ', romaji: 'me' }, { char: 'モ', romaji: 'mo' },
+            { char: 'ヤ', romaji: 'ya' }, { char: 'ユ', romaji: 'yu' }, { char: 'ヨ', romaji: 'yo' },
+            { char: 'ラ', romaji: 'ra' }, { char: 'リ', romaji: 'ri' }, { char: 'ル', romaji: 'ru' }, { char: 'レ', romaji: 're' }, { char: 'ロ', romaji: 'ro' },
+            { char: 'ワ', romaji: 'wa' }, { char: 'ヲ', romaji: 'wo' }, { char: 'ン', romaji: 'n' }
+        ];
+        
+        // Quiz Variables
+        let currentQuiz = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let quizType = '';
+        const quizLength = 10;
+        
+        // DOM Elements
+        const homepage = document.getElementById('homepage');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultContainer = document.getElementById('result-container');
+        const hiraganaCharsContainer = document.getElementById('hiragana-chars');
+        const katakanaCharsContainer = document.getElementById('katakana-chars');
+        const questionElement = document.getElementById('question');
+        const optionsContainer = document.getElementById('options');
+        const scoreElement = document.getElementById('score');
+        const currentQuestionElement = document.getElementById('current-question');
+        const totalQuestionsElement = document.getElementById('total-questions');
+        const progressBar = document.getElementById('progress-bar');
+        const finalScoreElement = document.getElementById('final-score');
+        const maxScoreElement = document.getElementById('max-score');
+        
+        // Initialize the app
+        function init() {
+            displayCharacters();
+            setupEventListeners();
+        }
+        
+        // Display all hiragana and katakana characters
+        function displayCharacters() {
+            hiragana.forEach(char => {
+                hiraganaCharsContainer.appendChild(createKanaCard(char));
+            });
+            
+            katakana.forEach(char => {
+                katakanaCharsContainer.appendChild(createKanaCard(char));
+            });
+        }
+        
+        // Create a kana character card
+        function createKanaCard(kana) {
+            const card = document.createElement('div');
+            card.className = 'kana-card';
+            
+            const charElement = document.createElement('div');
+            charElement.className = 'kana-char';
+            charElement.textContent = kana.char;
+            
+            const romajiElement = document.createElement('div');
+            romajiElement.className = 'kana-romaji';
+            romajiElement.textContent = kana.romaji;
+            
+            card.appendChild(charElement);
+            card.appendChild(romajiElement);
+            
+            return card;
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            document.getElementById('quiz-hiragana').addEventListener('click', () => {
+                startQuiz('hiragana');
+            });
+            
+            document.getElementById('quiz-katakana').addEventListener('click', () => {
+                startQuiz('katakana');
+            });
+            
+            document.getElementById('quiz-both').addEventListener('click', () => {
+                startQuiz('both');
+            });
+            
+            document.getElementById('restart-btn').addEventListener('click', () => {
+                startQuiz(quizType);
+            });
+            
+            document.getElementById('home-btn').addEventListener('click', () => {
+                showHomepage();
+            });
+        }
+        
+        // Start the quiz
+        function startQuiz(type) {
+            quizType = type;
+            currentQuiz = generateQuiz(type);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            updateScore();
+            totalQuestionsElement.textContent = quizLength;
+            
+            homepage.style.display = 'none';
+            quizContainer.style.display = 'block';
+            resultContainer.style.display = 'none';
+            
+            showQuestion();
+        }
+        
+        // Generate quiz questions
+        function generateQuiz(type) {
+            const questions = [];
+            let availableChars = [];
+            
+            if (type === 'hiragana') {
+                availableChars = [...hiragana];
+            } else if (type === 'katakana') {
+                availableChars = [...katakana];
+            } else {
+                availableChars = [...hiragana, ...katakana];
+            }
+            
+            // Shuffle the array
+            availableChars = shuffleArray([...availableChars]);
+            
+            // Take first 'quizLength' items
+            for (let i = 0; i < quizLength; i++) {
+                // Ensure we don't go beyond array length
+                if (i >= availableChars.length) break;
+                
+                const question = {
+                    char: availableChars[i].char,
+                    correctAnswer: availableChars[i].romaji,
+                    options: generateOptions(availableChars[i].romaji, availableChars)
+                };
+                questions.push(question);
+            }
+            
+            return questions;
+        }
+        
+        // Generate multiple choice options
+        function generateOptions(correctAnswer, allChars) {
+            const options = [correctAnswer];
+            
+            // Get unique incorrect options
+            while (options.length < 4) {
+                const randomIndex = Math.floor(Math.random() * allChars.length);
+                const randomRomaji = allChars[randomIndex].romaji;
+                
+                if (!options.includes(randomRomaji)) {
+                    options.push(randomRomaji);
+                }
+            }
+            
+            return shuffleArray(options);
+        }
+        
+        // Show current question
+        function showQuestion() {
+            if (currentQuestionIndex >= currentQuiz.length) {
+                showResult();
+                return;
+            }
+            
+            const question = currentQuiz[currentQuestionIndex];
+            questionElement.textContent = question.char;
+            
+            // Update progress
+            currentQuestionElement.textContent = currentQuestionIndex + 1;
+            progressBar.style.width = `${((currentQuestionIndex + 1) / quizLength) * 100}%`;
+            
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            
+            // Add new options
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                
+                button.addEventListener('click', () => selectAnswer(option, question.correctAnswer));
+                
+                optionsContainer.appendChild(button);
+            });
+        }
+        
+        // Select answer
+        function selectAnswer(selectedOption, correctAnswer) {
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            // Disable all buttons
+            buttons.forEach(button => {
+                button.disabled = true;
+            });
+            
+            // Highlight correct and wrong answers
+            buttons.forEach(button => {
+                if (button.textContent === correctAnswer) {
+                    button.classList.add('correct');
+                } else if (button.textContent === selectedOption && selectedOption !== correctAnswer) {
+                    button.classList.add('wrong');
+                }
+            });
+            
+            // Update score
+            if (selectedOption === correctAnswer) {
+                score++;
+                updateScore();
+            }
+            
+            // Move to next question after delay
+            setTimeout(() => {
+                currentQuestionIndex++;
+                showQuestion();
+            }, 1000);
+        }
+        
+        // Update score display
+        function updateScore() {
+            scoreElement.textContent = score;
+        }
+        
+        // Show quiz result
+        function showResult() {
+            quizContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+            
+            finalScoreElement.textContent = score;
+            maxScoreElement.textContent = quizLength;
+        }
+        
+        // Show homepage
+        function showHomepage() {
+            homepage.style.display = 'block';
+            quizContainer.style.display = 'none';
+            resultContainer.style.display = 'none';
+        }
+        
+        // Utility function to shuffle an array
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
